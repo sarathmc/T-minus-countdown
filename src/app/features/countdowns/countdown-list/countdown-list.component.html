@@ -1,0 +1,93 @@
+<header class="page-header">
+  <div>
+    <h1>Countdowns</h1>
+    <p>Manage, pause, duplicate or archive your deadlines.</p>
+  </div>
+  <a routerLink="/countdowns/new" class="btn btn-primary">+ New countdown</a>
+</header>
+
+<div class="filters" role="group" aria-label="Filter countdowns by status">
+  @for (item of filters; track item.id) {
+    <button
+      type="button"
+      class="btn btn-sm"
+      [class.btn-primary]="filter() === item.id"
+      [class.btn-secondary]="filter() !== item.id"
+      [attr.aria-pressed]="filter() === item.id"
+      (click)="setFilter(item.id)"
+    >
+      {{ item.label }}
+    </button>
+  }
+</div>
+
+@if (store.total() === 0) {
+  <app-empty-state
+    title="No countdowns yet"
+    message="Create your first countdown to see it listed here."
+  >
+    <a routerLink="/countdowns/new" class="btn btn-primary">Create a countdown</a>
+  </app-empty-state>
+} @else if (filtered().length === 0) {
+  <app-empty-state
+    title="No countdowns match this filter"
+    message="Try a different status filter, or create a new countdown."
+  />
+} @else {
+  <ul class="countdown-list">
+    @for (countdown of filtered(); track countdown.id) {
+      <li class="card countdown-row">
+        <div class="countdown-main">
+          <div class="countdown-title-row">
+            <h2>
+              <a [routerLink]="['/countdowns', countdown.id]">{{ countdown.title }}</a>
+            </h2>
+            <span class="badge badge-{{ countdown.status }}">{{ countdown.status }}</span>
+            <span class="badge">{{ countdown.category }}</span>
+          </div>
+          @if (countdown.description) {
+            <p class="description">{{ countdown.description }}</p>
+          }
+          <app-countdown-timer [targetDate]="countdown.targetDate" [compact]="true" />
+        </div>
+
+        <div class="countdown-actions">
+          <a class="btn btn-secondary btn-sm" [routerLink]="['/countdowns', countdown.id, 'edit']"
+            >Edit</a
+          >
+          <button type="button" class="btn btn-secondary btn-sm" (click)="duplicate(countdown.id)">
+            Duplicate
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            (click)="togglePause(countdown.id, countdown.status)"
+          >
+            {{ countdown.status === 'paused' ? 'Resume' : 'Pause' }}
+          </button>
+          @if (countdown.status !== 'archived') {
+            <button type="button" class="btn btn-secondary btn-sm" (click)="archive(countdown.id)">
+              Archive
+            </button>
+          }
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            (click)="requestDelete(countdown.id)"
+          >
+            Delete
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+}
+
+<app-confirm-dialog
+  [open]="pendingDeleteId() !== null"
+  title="Delete this countdown?"
+  message="This will permanently remove the countdown and all of its milestones. This cannot be undone."
+  confirmLabel="Delete"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()"
+/>

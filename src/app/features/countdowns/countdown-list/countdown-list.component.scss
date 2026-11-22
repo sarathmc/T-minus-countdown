@@ -1,0 +1,70 @@
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.countdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.countdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.countdown-main {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.countdown-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.countdown-title-row h2 {
+  margin: 0;
+  font-size: var(--font-size-md);
+}
+
+.countdown-title-row a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.countdown-title-row a:hover {
+  color: var(--color-primary);
+}
+
+.description {
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0;
+}
+
+.countdown-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}

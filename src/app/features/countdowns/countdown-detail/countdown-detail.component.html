@@ -1,0 +1,142 @@
+@if (!countdown()) {
+  <app-empty-state
+    title="Countdown not found"
+    message="It may have been deleted, or the link is incorrect."
+  >
+    <a routerLink="/countdowns" class="btn btn-primary">Back to countdowns</a>
+  </app-empty-state>
+} @else {
+  @let c = countdown()!;
+
+  <header class="page-header">
+    <div>
+      <a routerLink="/countdowns" class="back-link">&larr; All countdowns</a>
+      <h1>{{ c.title }}</h1>
+      @if (c.description) {
+        <p>{{ c.description }}</p>
+      }
+      <div class="meta-badges">
+        <span class="badge badge-{{ c.status }}">{{ c.status }}</span>
+        <span class="badge">{{ c.category }}</span>
+        <span class="muted">{{ calculator.formatInTimeZone(c.targetDate, c.timeZone) }} ({{
+          c.timeZone
+        }})</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a class="btn btn-secondary" [routerLink]="['/countdowns', c.id, 'edit']">Edit</a>
+      <button type="button" class="btn btn-secondary" (click)="duplicate()">Duplicate</button>
+      <button type="button" class="btn btn-secondary" (click)="togglePause()">
+        {{ c.status === 'paused' ? 'Resume' : 'Pause' }}
+      </button>
+      @if (c.status !== 'archived') {
+        <button type="button" class="btn btn-secondary" (click)="archive()">Archive</button>
+      }
+      <button type="button" class="btn btn-danger" (click)="requestDeleteCountdown()">
+        Delete
+      </button>
+    </div>
+  </header>
+
+  <section class="card timer-panel">
+    <app-countdown-timer [targetDate]="c.targetDate" />
+  </section>
+
+  <section class="card milestones-panel">
+    <div class="milestones-header">
+      <div>
+        <h2>Milestones</h2>
+        <app-progress-bar [value]="completion()" label="Overall milestone completion" />
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" (click)="openAddMilestone()">
+        + Add milestone
+      </button>
+    </div>
+
+    @if (sortedMilestones().length === 0) {
+      <app-empty-state
+        title="No milestones yet"
+        message="Add a custom milestone to track progress toward this deadline."
+      />
+    } @else {
+      <ul class="milestone-list">
+        @for (milestone of sortedMilestones(); track milestone.id) {
+          <li class="milestone-row" [class.done]="milestone.done">
+            <label class="milestone-check">
+              <input
+                type="checkbox"
+                [checked]="milestone.done"
+                (change)="toggleMilestone(milestone.id, !milestone.done)"
+                [attr.aria-label]="'Mark ' + milestone.title + ' as ' + (milestone.done ? 'not done' : 'done')"
+              />
+              <span>
+                <strong>{{ milestone.title }}</strong>
+                <span class="muted">{{ milestone.date | date: 'mediumDate' }}</span>
+                @if (milestone.description) {
+                  <span class="milestone-description">{{ milestone.description }}</span>
+                }
+              </span>
+            </label>
+            @if (!milestone.isDefault) {
+              <button
+                type="button"
+                class="btn btn-ghost btn-sm"
+                (click)="requestDeleteMilestone(milestone.id)"
+                [attr.aria-label]="'Delete milestone ' + milestone.title"
+              >
+                Delete
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  @if (showAddMilestone()) {
+    <section class="card add-milestone-form" aria-label="Add a custom milestone">
+      <h3>Add milestone</h3>
+      @if (milestoneError()) {
+        <p class="form-error" role="alert">{{ milestoneError() }}</p>
+      }
+      <form [formGroup]="milestoneForm" (ngSubmit)="submitMilestone()" novalidate>
+        <div class="form-field">
+          <label for="milestone-title">Title</label>
+          <input id="milestone-title" type="text" formControlName="title" maxlength="64" />
+        </div>
+        <div class="form-field">
+          <label for="milestone-date">Date</label>
+          <input id="milestone-date" type="date" formControlName="date" />
+        </div>
+        <div class="form-field">
+          <label for="milestone-description">Description (optional)</label>
+          <textarea id="milestone-description" formControlName="description" rows="2"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" (click)="cancelAddMilestone()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Add milestone</button>
+        </div>
+      </form>
+    </section>
+  }
+
+  <app-confirm-dialog
+    [open]="pendingDeleteMilestoneId() !== null"
+    title="Delete this milestone?"
+    message="This milestone will be removed from the plan."
+    confirmLabel="Delete"
+    (confirm)="confirmDeleteMilestone()"
+    (cancel)="cancelDeleteMilestone()"
+  />
+
+  <app-confirm-dialog
+    [open]="pendingDeleteCountdown()"
+    title="Delete this countdown?"
+    message="This will permanently remove this countdown and all of its milestones."
+    confirmLabel="Delete"
+    (confirm)="confirmDeleteCountdown()"
+    (cancel)="cancelDeleteCountdown()"
+  />
+}

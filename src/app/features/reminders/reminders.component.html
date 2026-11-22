@@ -1,0 +1,74 @@
+<header class="page-header">
+  <div><p class="eyebrow">STAY ON TRACK</p><h1>Reminders</h1><p>Keep important dates visible without relying on background delivery.</p></div>
+</header>
+
+<section class="card notice" aria-labelledby="delivery-limit-title">
+  <h2 id="delivery-limit-title">A note about browser reminders</h2>
+  <p>Notifications are checked only while this app is open and visible. They are not guaranteed when the browser is closed, the device is asleep, or this app is suspended. Reliable background delivery requires a future server-side push scheduler.</p>
+</section>
+
+@if (!reminderStore.loaded() || !countdownStore.loaded()) {
+  <section class="card state" role="status">Loading reminders saved on this device…</section>
+} @else {
+  @if (reminderStore.error()) { <p class="form-error" role="alert">{{ reminderStore.error() }}</p> }
+  <section class="card preferences" aria-labelledby="preferences-title">
+    <div><p class="eyebrow">THIS DEVICE</p><h2 id="preferences-title">Notification preferences</h2></div>
+    <p>Permission: <strong>{{ notifications.permission() }}</strong></p>
+    @if (notifications.permission() === 'default') {
+      <button type="button" class="btn btn-primary" (click)="enableNotifications()">Enable browser notifications</button>
+    } @else if (notifications.permission() === 'denied') {
+      <p class="hint">Permission was denied. Allow notifications in your browser’s site settings, then reload this page.</p>
+    } @else if (notifications.permission() === 'unsupported') {
+      <p class="hint">This browser does not support the Notification API. Reminders are still saved and visible here.</p>
+    } @else {
+      <p>{{ preferences().notificationsEnabled ? 'Due reminders are enabled while this app is open.' : 'Due reminders are currently off.' }}</p>
+      @if (preferences().notificationsEnabled) { <button type="button" class="btn btn-secondary" (click)="disableNotifications()">Turn notifications off</button> }
+      @else { <button type="button" class="btn btn-secondary" (click)="enableNotifications()">Turn notifications on</button> }
+    }
+    <label class="check"><input type="checkbox" [checked]="preferences().dailyReminderEnabled" (change)="toggleDaily($any($event.target).checked)"> Daily reminder preference</label>
+    <div class="form-row">
+      <div class="form-field"><label for="daily-time">Preferred daily time</label><input id="daily-time" type="time" [value]="preferences().dailyReminderTime" (change)="updateDailyTime($any($event.target).value)"></div>
+      <div class="form-field"><label for="daily-zone">Timezone</label><select id="daily-zone" [value]="preferences().timeZone" (change)="updatePreferenceZone($any($event.target).value)">@for (zone of zones; track zone) { <option [value]="zone">{{ zone }}</option> }</select></div>
+    </div>
+    <p class="hint">Daily time is a saved preference only; recurring daily scheduling becomes active with backend push delivery.</p>
+  </section>
+
+  <div class="content-grid">
+    <section class="card editor" aria-labelledby="form-title">
+      <h2 id="form-title">{{ editingId() ? 'Edit reminder' : 'Create a reminder' }}</h2>
+      @if (countdownStore.countdowns().length === 0) {
+        <p>No countdowns yet. Create a countdown before adding a reminder.</p>
+      } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+          <div class="form-field"><label for="countdown">Countdown</label><select id="countdown" formControlName="countdownId" (change)="onCountdownChange()"><option value="">Choose a countdown</option>@for (countdown of countdownStore.countdowns(); track countdown.id) { <option [value]="countdown.id">{{ countdown.title }}</option> }</select></div>
+          @if (selectedMilestones.length) { <div class="form-field"><label for="milestone">Milestone (optional)</label><select id="milestone" formControlName="milestoneId"><option value="">No specific milestone</option>@for (milestone of selectedMilestones; track milestone.id) { <option [value]="milestone.id">{{ milestone.title }}</option> }</select></div> }
+          <div class="form-field"><label for="preset">Quick schedule</label><select id="preset" (change)="applyPreset($any($event.target).value === '' ? null : +$any($event.target).value)"><option value="">Custom date and time</option>@for (preset of presets; track preset.days) { <option [value]="preset.days">{{ preset.label }}</option> }</select></div>
+          <div class="form-field"><label for="reminder-title">Reminder title</label><input id="reminder-title" formControlName="title" maxlength="100" required><span class="hint">Up to 100 characters.</span></div>
+          <div class="form-field"><label for="reminder-description">Description (optional)</label><textarea id="reminder-description" rows="2" maxlength="280" formControlName="description"></textarea></div>
+          <div class="form-row">
+            <div class="form-field"><label for="scheduled">Date and time</label><input id="scheduled" type="datetime-local" formControlName="scheduledLocal" required></div>
+            <div class="form-field"><label for="timezone">Timezone</label><select id="timezone" formControlName="timeZone">@for (zone of zones; track zone) { <option [value]="zone">{{ zone }}</option> }</select></div>
+          </div>
+          <label class="check"><input type="checkbox" formControlName="enabled"> Reminder enabled</label>
+          <label class="check"><input type="checkbox" formControlName="allowDuplicate"> Explicitly allow another reminder for this milestone</label>
+          @if (form.touched && form.invalid) { <p class="form-error" role="alert">Choose a countdown, title, date, and time.</p> }
+          <div class="actions"><button class="btn btn-primary" type="submit">{{ editingId() ? 'Save changes' : 'Save reminder' }}</button>@if (editingId()) { <button class="btn btn-ghost" type="button" (click)="resetForm()">Cancel edit</button> }</div>
+        </form>
+      }
+    </section>
+
+    <section class="list-column" aria-label="Saved reminders">
+      <section class="card reminder-list" aria-labelledby="upcoming-title"><h2 id="upcoming-title">Scheduled reminders</h2>
+        @if (reminderStore.scheduled().length === 0) { <p class="empty">No scheduled reminders. Add one using a quick schedule or choose a custom date.</p> }
+        @for (reminder of reminderStore.scheduled(); track reminder.id) {
+          <article class="reminder-item"><div><h3>{{ reminder.title }}</h3><p>{{ countdownTitle(reminder.countdownId) }} · {{ formatDate(reminder) }}</p>@if (reminder.description) { <p class="hint">{{ reminder.description }}</p> }</div><div class="item-actions"><label class="switch-label"><input type="checkbox" [checked]="reminder.enabled" (change)="setEnabled(reminder, $any($event.target).checked)"> Enabled</label><button class="btn btn-ghost" type="button" (click)="edit(reminder)">Edit</button><button class="btn btn-ghost danger-text" type="button" (click)="delete(reminder)">Delete</button></div></article>
+        }
+      </section>
+      <section class="card reminder-list" aria-labelledby="history-title"><h2 id="history-title">Completed or expired</h2>
+        @if (reminderHistory.history().length === 0) { <p class="empty">No reminder history yet.</p> }
+        @for (reminder of reminderHistory.history(); track reminder.id) { <article class="reminder-item history"><div><h3>{{ reminder.title }}</h3><p>{{ countdownTitle(reminder.countdownId) }} · {{ formatDate(reminder) }}</p></div><span class="badge">{{ reminder.deliveryStatus }}</span></article> }
+      </section>
+    </section>
+  </div>
+  @if (message()) { <p class="feedback" role="status" aria-live="polite">{{ message() }}</p> }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "T-Minus Countdown",
+  "short_name": "T-Minus",
+  "description": "Plan your deadline, track milestones and create a countdown wallpaper.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0e1119",
+  "theme_color": "#10131d",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
+  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

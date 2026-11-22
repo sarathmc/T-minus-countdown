@@ -1,0 +1,88 @@
+<header class="page-header">
+  <h1>{{ isEditMode() ? 'Edit countdown' : 'New countdown' }}</h1>
+</header>
+
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @if (serverError()) {
+    <p class="form-error" role="alert">{{ serverError() }}</p>
+  }
+
+  <div class="form-field" [class.has-error]="form.controls.title.invalid && form.controls.title.touched">
+    <label for="title">Title</label>
+    <input
+      id="title"
+      type="text"
+      formControlName="title"
+      maxlength="64"
+      [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched"
+      aria-describedby="title-error"
+    />
+    @if (form.controls.title.invalid && form.controls.title.touched) {
+      <span id="title-error" class="error">Title is required (max 64 characters).</span>
+    }
+  </div>
+
+  <div class="form-field">
+    <label for="description">Description (optional)</label>
+    <textarea id="description" formControlName="description" rows="3" maxlength="280"></textarea>
+  </div>
+
+  <div class="form-row">
+    <div
+      class="form-field"
+      [class.has-error]="form.controls.targetDate.invalid && form.controls.targetDate.touched"
+    >
+      <label for="targetDate">Target date and time</label>
+      <input
+        id="targetDate"
+        type="datetime-local"
+        formControlName="targetDate"
+        [attr.aria-invalid]="form.controls.targetDate.invalid && form.controls.targetDate.touched"
+      />
+      @if (form.controls.targetDate.invalid && form.controls.targetDate.touched) {
+        <span class="error">Choose a date and time for the deadline.</span>
+      }
+    </div>
+
+    <div class="form-field">
+      <label for="timeZone">Timezone</label>
+      <select id="timeZone" formControlName="timeZone">
+        @for (zone of timeZones; track zone) {
+          <option [value]="zone">{{ zone }}</option>
+        }
+      </select>
+      <span class="hint">Used to interpret and display the target date.</span>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label for="category">Category</label>
+    <select id="category" formControlName="category">
+      @for (category of categories; track category) {
+        <option [value]="category">{{ category }}</option>
+      }
+    </select>
+  </div>
+
+  @if (!isEditMode()) {
+    <fieldset class="form-field">
+      <legend>Milestone preset</legend>
+      @for (preset of presets; track preset.id) {
+        <label class="radio-option">
+          <input type="radio" formControlName="milestonePreset" [value]="preset.id" />
+          <span>
+            <strong>{{ preset.label }}</strong>
+            <span class="hint">{{ preset.description }}</span>
+          </span>
+        </label>
+      }
+    </fieldset>
+  }
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-ghost" (click)="cancel()">Cancel</button>
+    <button type="submit" class="btn btn-primary">
+      {{ isEditMode() ? 'Save changes' : 'Create countdown' }}
+    </button>
+  </div>
+</form>

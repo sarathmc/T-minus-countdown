@@ -1,0 +1,82 @@
+<section class="studio">
+  <header class="page-heading">
+    <div><p class="eyebrow">MAKE IT YOURS</p><h1>Wallpaper studio</h1><p>Design a focused reminder for your screen.</p></div>
+    @if (countdowns().length) {
+      <label class="countdown-select">Countdown
+        <select [value]="countdownId()" (change)="selectCountdown($any($event.target).value)">
+          @for (item of countdowns(); track item.id) { <option [value]="item.id">{{ item.title }}</option> }
+        </select>
+      </label>
+    }
+  </header>
+
+  @if (!countdowns().length) {
+    <app-empty-state title="Create a countdown first" message="Your wallpaper is built from a countdown and its milestones. Add one to get started." />
+  } @else if (!countdown()) {
+    <app-empty-state title="Countdown not found" message="This countdown may have been removed. Choose another countdown above." />
+  } @else {
+    <div class="workspace">
+      <div class="editor">
+        <section class="control-section"><h2>Choose a design</h2>
+          <div class="templates" role="group" aria-label="Wallpaper templates">
+            @for (template of templates; track template.id) {
+              <button type="button" class="template" [class.selected]="options().template === template.id"
+                [attr.aria-pressed]="options().template === template.id" (click)="chooseTemplate(template.id)">
+                <span class="swatch" [style.background]="template.background" [style.color]="template.foreground">T–</span>
+                <span><strong>{{ template.name }}</strong><small>{{ template.description }}</small></span>
+              </button>
+            }
+          </div>
+        </section>
+        <section class="control-section"><h2>Canvas</h2>
+          <div class="segmented" aria-label="Wallpaper format">
+            <button type="button" [class.active]="options().format === 'mobile'" [attr.aria-pressed]="options().format === 'mobile'" (click)="update('format', 'mobile')">Mobile · 9:16</button>
+            <button type="button" [class.active]="options().format === 'desktop'" [attr.aria-pressed]="options().format === 'desktop'" (click)="update('format', 'desktop')">Desktop · 16:9</button>
+          </div>
+          <p class="hint">Export size {{ dimensions().width }} × {{ dimensions().height }} px</p>
+        </section>
+        <section class="control-section"><h2>Appearance</h2>
+          <div class="color-controls">
+            <label>Background <input type="color" [value]="options().background" (input)="update('background', $any($event.target).value)" /></label>
+            <label>Text <input type="color" [value]="options().foreground" (input)="update('foreground', $any($event.target).value)" /></label>
+            <label>Accent <input type="color" [value]="options().accent" (input)="update('accent', $any($event.target).value)" /></label>
+          </div>
+          <label class="field">Typography
+            <select [value]="options().font" (change)="update('font', $any($event.target).value)">
+              <option value="Georgia, serif">Editorial serif</option><option value="Arial, sans-serif">Modern sans</option><option value="Arial Black, Arial, sans-serif">Heavy display</option><option value="'Courier New', monospace">Monospace</option>
+            </select>
+          </label>
+          <label class="field range-field">Font size <output>{{ options().fontSize }}</output>
+            <input type="range" min="5" max="12" step="0.5" [value]="options().fontSize" (input)="update('fontSize', +$any($event.target).value)" />
+          </label>
+          <label class="field">Alignment
+            <select [value]="options().alignment" (change)="update('alignment', $any($event.target).value)"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
+          </label>
+        </section>
+        <section class="control-section"><h2>Show on wallpaper</h2>
+          <label class="check"><input type="checkbox" [checked]="options().showTitle" (change)="update('showTitle', $any($event.target).checked)" />Countdown title</label>
+          <label class="check"><input type="checkbox" [checked]="options().showTimer" (change)="update('showTimer', $any($event.target).checked)" />Live countdown</label>
+          <label class="check"><input type="checkbox" [checked]="options().showDate" (change)="update('showDate', $any($event.target).checked)" />Target date</label>
+          <label class="check"><input type="checkbox" [checked]="options().showMilestones" (change)="update('showMilestones', $any($event.target).checked)" />Milestone checklist</label>
+        </section>
+      </div>
+
+      <section class="preview-panel" aria-label="Wallpaper preview">
+        <div class="preview-toolbar"><div><h2>Live preview</h2><p>Updates as you customize</p></div><button type="button" class="btn btn-ghost" (click)="reset()">Reset</button></div>
+        <div class="preview-wrap" [class.desktop]="options().format === 'desktop'">
+          <article class="wallpaper" [ngStyle]="previewStyle()" [class.bold]="options().template === 'bold'" [class.milestone-template]="options().template === 'milestone'">
+            <div class="preview-content">
+              @if (options().showTitle) { <h3>{{ countdown()!.title }}</h3> }
+              @if (options().showTimer) { <div class="digits"><span>{{ time().days }}</span><span>{{ time().hours | number:'2.0-0' }}</span><span>{{ time().minutes | number:'2.0-0' }}</span><span>{{ time().seconds | number:'2.0-0' }}</span></div><div class="units"><span>days</span><span>hours</span><span>minutes</span><span>seconds</span></div> }
+              @if (options().showDate) { <p class="date">{{ countdown()!.targetDate | date:'longDate':countdown()!.timeZone }}</p> }
+              @if (options().showMilestones && options().template === 'milestone') { <ul class="preview-milestones">@for (milestone of orderedMilestones(); track milestone.id) { <li [class.done]="milestone.done"><span aria-hidden="true">{{ milestone.done ? '✓' : '○' }}</span>{{ milestone.title }}</li> }</ul> }
+            </div>
+            <span class="brand-note" aria-hidden="true">T—MINUS</span>
+          </article>
+        </div>
+        @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+        <button type="button" class="btn btn-primary download" [disabled]="exporting()" (click)="download()">{{ exporting() ? 'Preparing PNG…' : 'Download PNG' }}</button>
+      </section>
+    </div>
+  }
+</section>

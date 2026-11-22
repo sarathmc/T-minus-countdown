@@ -1,0 +1,72 @@
+<header class="page-header">
+  <div>
+    <h1>Dashboard</h1>
+    <p>An overview of every deadline you're tracking.</p>
+  </div>
+  <a routerLink="/countdowns/new" class="btn btn-primary">+ New countdown</a>
+</header>
+
+<section class="stats-grid" aria-label="Countdown statistics">
+  <div class="card stat">
+    <span class="stat-value">{{ store.total() }}</span>
+    <span class="stat-label">Total countdowns</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-value">{{ store.active().length }}</span>
+    <span class="stat-label">Active</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-value">{{ store.completed().length }}</span>
+    <span class="stat-label">Completed</span>
+  </div>
+  <div class="card stat">
+    <span class="stat-value">{{ store.paused().length + store.archived().length }}</span>
+    <span class="stat-label">Paused / archived</span>
+  </div>
+</section>
+
+@if (store.total() === 0) {
+  <app-empty-state
+    title="No countdowns yet"
+    message="Create your first countdown to start tracking a deadline, with milestones generated automatically."
+  >
+    <a routerLink="/countdowns/new" class="btn btn-primary">Create a countdown</a>
+  </app-empty-state>
+} @else {
+  <section class="panel">
+    <h2>Upcoming deadlines</h2>
+    @if (store.upcoming().length === 0) {
+      <p class="muted">No active countdowns with a future deadline.</p>
+    } @else {
+      <ul class="countdown-cards">
+        @for (countdown of store.upcoming().slice(0, 4); track countdown.id) {
+          <li class="card countdown-card">
+            <div class="countdown-card-header">
+              <h3>
+                <a [routerLink]="['/countdowns', countdown.id]">{{ countdown.title }}</a>
+              </h3>
+              <span class="badge badge-active">{{ countdown.category }}</span>
+            </div>
+            <app-countdown-timer [targetDate]="countdown.targetDate" [compact]="true" />
+            <app-progress-bar
+              [value]="completionFor(countdown.id)"
+              [label]="'Milestone progress for ' + countdown.title"
+            />
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="panel">
+    <h2>Recently updated</h2>
+    <ul class="recent-list">
+      @for (countdown of store.recentlyUpdated(); track countdown.id) {
+        <li>
+          <a [routerLink]="['/countdowns', countdown.id]">{{ countdown.title }}</a>
+          <span class="muted">{{ countdown.updatedAt | date: 'medium' }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+}

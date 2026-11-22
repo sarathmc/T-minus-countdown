@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  id        String   @id @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  countdowns Countdown[]
+  reminders Reminder[]
+  subscriptions NotificationSubscription[]
+  preference ReminderPreference?
+  wallpaper WallpaperPreference?
+  syncMetadata SynchronizationMetadata?
+  deletions DeletedRecord[]
+  syncRequests SyncRequest[]
+  pushDeliveries PushDelivery[]
+  @@map("users")
+}
+
+model Countdown {
+  id          String   @id @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String   @db.VarChar(64)
+  description String   @default("") @db.VarChar(2000)
+  targetDate  DateTime @map("target_at") @db.Timestamptz(6)
+  timeZone    String   @map("time_zone") @db.VarChar(100)
+  category    String   @db.VarChar(20)
+  status      String   @db.VarChar(12)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  revision    Int      @default(1)
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+  reminders   Reminder[]
+  @@index([userId, targetDate])
+  @@map("countdowns")
+}
+
+model Milestone {
+  id          String   @id @db.Uuid
+  countdownId String   @map("countdown_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String   @db.VarChar(160)
+  description String   @default("") @db.VarChar(2000)
+  date        DateTime @map("due_at") @db.Timestamptz(6)
+  offsetDays  Int?     @map("offset_days")
+  done        Boolean  @default(false) @map("is_complete")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  revision    Int      @default(1)
+  countdown   Countdown @relation(fields: [countdownId], references: [id], onDelete: Cascade)
+  reminders   Reminder[]
+  @@unique([countdownId, date])
+  @@index([userId, countdownId, date])
+  @@map("milestones")
+}
+
+model Reminder {
+  id          String   @id @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  countdownId String   @map("countdown_id") @db.Uuid
+  milestoneId String?  @map("milestone_id") @db.Uuid
+  title       String   @db.VarChar(160)
+  description String   @default("") @db.VarChar(2000)
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz(6)
+  timeZone    String   @map("time_zone") @db.VarChar(100)
+  type        String   @db.VarChar(16)
+  enabled     Boolean  @default(true)
+  status      String   @default("scheduled") @db.VarChar(16)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  revision    Int      @default(1)
+  user        UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  countdown   Countdown @relation(fields: [countdownId], references: [id], onDelete: Cascade)
+  milestone   Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  pushDeliveries PushDelivery[]
+  @@index([userId, scheduledAt, enabled])
+  @@map("reminders")
+}
+
+model ReminderPreference {
+  userId               String   @id @map("user_id") @db.Uuid
+  notificationsEnabled Boolean  @default(false) @map("notifications_enabled")
+  dailyReminderEnabled Boolean  @default(false) @map("daily_reminder_enabled")
+  dailyReminderTime    String   @default("09:00") @map("daily_reminder_time") @db.VarChar(5)
+  timeZone             String   @map("time_zone") @db.VarChar(100)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user                 UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("reminder_preferences")
+}
+
+model NotificationSubscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  endpoint  String   @unique @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries PushDelivery[]
+  @@map("notification_subscriptions")
+}
+
+model PushDelivery {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  reminderId     String   @map("reminder_id") @db.Uuid
+  subscriptionId String   @map("subscription_id") @db.Uuid
+  status         String   @default("queued") @db.VarChar(16)
+  attempts       Int      @default(0)
+  nextAttemptAt  DateTime @default(now()) @map("next_attempt_at") @db.Timestamptz(6)
+  deliveredAt    DateTime? @map("delivered_at") @db.Timestamptz(6)
+  lastError      String?  @map("last_error") @db.VarChar(500)
+  idempotencyKey String   @unique @map("idempotency_key") @db.VarChar(128)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  claimToken     String?  @map("claim_token") @db.VarChar(64)
+  claimExpiresAt DateTime? @map("claim_expires_at") @db.Timestamptz(6)
+  user           UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminder       Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  subscription   NotificationSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  @@unique([reminderId, subscriptionId])
+  @@index([status, nextAttemptAt])
+  @@index([userId, status, nextAttemptAt])
+  @@map("push_deliveries")
+}
+
+model WallpaperPreference {
+  userId    String   @id @map("user_id") @db.Uuid
+  settings  Json
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("wallpaper_preferences")
+}
+
+model SynchronizationMetadata {
+  userId       String   @id @map("user_id") @db.Uuid
+  lastSyncedAt DateTime @default(now()) @map("last_synced_at") @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user         UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("synchronization_metadata")
+}
+
+model DeletedRecord {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  entity    String   @db.VarChar(20)
+  recordId  String   @map("record_id") @db.Uuid
+  deletedAt DateTime @default(now()) @map("deleted_at") @db.Timestamptz(6)
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, entity, recordId])
+  @@map("deleted_records")
+}
+
+model SyncRequest {
+  userId       String   @map("user_id") @db.Uuid
+  idempotencyKey String @map("idempotency_key") @db.VarChar(128)
+  requestHash  String   @map("request_hash") @db.Char(64)
+  response     Json
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user         UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, idempotencyKey])
+  @@index([createdAt])
+  @@map("sync_requests")
+}

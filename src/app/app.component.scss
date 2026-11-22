@@ -1,0 +1,118 @@
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--color-primary);
+  color: #fff;
+  padding: var(--space-2) var(--space-4);
+  z-index: 200;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.network-status { color: var(--color-text-muted); font-size: .78rem; white-space: nowrap; }
+.update-notice { padding: .65rem 1rem; text-align: center; background: var(--color-primary); color: #fff; }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+}
+
+.primary-nav ul {
+  display: flex;
+  list-style: none;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+}
+
+.primary-nav a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 600;
+  padding-block: var(--space-2);
+  border-bottom: 2px solid transparent;
+}
+
+.primary-nav a:hover {
+  color: var(--color-text);
+}
+
+.primary-nav a.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: var(--space-6);
+}
+
+.app-main:focus {
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .primary-nav {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .primary-nav ul {
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .network-status {
+    width: 100%;
+  }
+
+  .app-main {
+    padding: var(--space-4);
+  }
+}

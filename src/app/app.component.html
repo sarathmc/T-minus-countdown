@@ -1,0 +1,31 @@
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" routerLink="/dashboard">
+      <span class="brand-mark" aria-hidden="true">T–</span>
+      <span>T-Minus Countdown</span>
+    </a>
+
+    <nav class="primary-nav" aria-label="Primary">
+      <ul>
+        @for (link of navLinks; track link.path) {
+          <li>
+            <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{
+              link.label
+            }}</a>
+          </li>
+        }
+      </ul>
+    </nav>
+    <span class="network-status" role="status" aria-live="polite">{{ online() ? 'Online · saved on this device' : 'Offline · saved on this device' }}</span>
+  </header>
+
+  @if (updateReady()) {
+    <div class="update-notice" role="status">A new version is ready. <button type="button" class="btn btn-secondary" (click)="reloadForUpdate()">Update now</button></div>
+  }
+
+  <main id="main-content" class="app-main" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>
