@@ -17,9 +17,10 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
       .empty-state {
         text-align: center;
         padding: var(--space-7) var(--space-5);
-        border: 1px dashed var(--color-border);
+        border: 1px dashed var(--countdown-secondary-text, var(--color-border));
         border-radius: var(--radius-lg);
-        background: var(--color-surface);
+        background: var(--countdown-surface, var(--color-surface));
+        color: var(--countdown-text, var(--color-text));
       }
 
       h2 {
@@ -27,7 +28,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
       }
 
       p {
-        color: var(--color-text-muted);
+        color: var(--countdown-secondary-text, var(--color-text-muted));
         max-width: 32rem;
         margin-inline: auto;
       }

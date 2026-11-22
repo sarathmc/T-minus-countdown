@@ -53,12 +53,21 @@
 }
 
 .countdown-title-row a {
-  color: var(--countdown-text, var(--color-text));
+  color: var(--countdown-link, var(--countdown-text, var(--color-text)));
   text-decoration: none;
 }
 
 .countdown-title-row a:hover {
-  color: var(--color-primary);
+  color: var(--countdown-link-hover, var(--countdown-text, var(--color-text)));
+}
+
+.countdown-title-row a:visited {
+  color: var(--countdown-link, var(--countdown-text, var(--color-text)));
+}
+
+.countdown-title-row a:focus-visible {
+  outline: 3px solid var(--countdown-focus, var(--color-focus-ring));
+  outline-offset: 3px;
 }
 
 .description {

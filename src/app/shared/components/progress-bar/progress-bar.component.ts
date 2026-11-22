@@ -30,13 +30,13 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
         flex: 1;
         height: 8px;
         border-radius: 999px;
-        background: var(--color-border);
+        background: var(--countdown-progress-track, var(--color-border));
         overflow: hidden;
       }
 
       .fill {
         height: 100%;
-        background: var(--color-primary);
+        background: var(--countdown-progress-fill, var(--color-primary));
         border-radius: inherit;
         transition: width 0.3s ease;
       }
@@ -49,7 +49,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
       .value {
         font-size: var(--font-size-sm);
-        color: var(--color-text-muted);
+        color: var(--countdown-secondary-text, var(--color-text-muted));
         min-width: 2.5rem;
         text-align: right;
       }

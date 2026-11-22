@@ -69,6 +69,11 @@ test('applies an independent theme and persists it on the countdown presentation
   await page.goto('/dashboard');
   const themedCard = page.locator('.countdown-themed').filter({ has: page.getByRole('link', { name: 'Themed deadline', exact: true }) });
   await expect(themedCard).toHaveCSS('background-color', 'rgb(255, 218, 98)');
+  const themedLink = themedCard.getByRole('link', { name: 'Themed deadline', exact: true });
+  await themedLink.hover();
+  await expect(themedLink).toHaveCSS('color', 'rgb(167, 39, 30)');
+  await themedLink.focus();
+  await expect(themedLink).toHaveCSS('outline-style', 'solid');
   const otherCard = page.locator('.countdown-themed').filter({ has: page.getByRole('link', { name: 'Unthemed deadline', exact: true }) });
   await expect(otherCard).toHaveCSS('background-color', 'rgb(255, 253, 248)');
   await page.goto(`/countdowns/${firstId}`);

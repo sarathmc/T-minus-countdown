@@ -11,12 +11,12 @@
   display: inline-block;
   margin-bottom: var(--space-2);
   font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
+  color: var(--countdown-secondary-text, var(--color-text-muted));
   text-decoration: none;
 }
 
 .back-link:hover {
-  color: var(--color-primary);
+  color: var(--countdown-link-hover, var(--color-primary));
 }
 
 .meta-badges {
@@ -41,6 +41,16 @@
   color: var(--countdown-text, var(--color-text));
   border: var(--countdown-border, 1px solid var(--color-border));
   border-radius: var(--countdown-radius, var(--radius-lg));
+}
+
+.countdown-themed {
+  color: var(--countdown-text, var(--color-text));
+}
+
+.countdown-themed .muted,
+.countdown-themed .description,
+.countdown-themed .milestone-description {
+  color: var(--countdown-secondary-text, var(--color-text-muted));
 }
 
 .milestones-panel {
@@ -79,12 +89,14 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: var(--countdown-border, 1px solid var(--color-border));
+  border-radius: var(--countdown-radius, var(--radius-md));
+  background: var(--countdown-surface, var(--color-surface));
+  color: var(--countdown-text, var(--color-text));
 }
 
 .milestone-row.done {
-  background: var(--color-success-bg);
+  background: color-mix(in srgb, var(--countdown-accent, var(--color-success)) 16%, var(--countdown-surface, var(--color-surface)));
 }
 
 .milestone-check {
@@ -93,6 +105,15 @@
   gap: var(--space-3);
   cursor: pointer;
   flex: 1;
+}
+
+.milestone-check input {
+  accent-color: var(--countdown-accent, var(--color-primary));
+}
+
+.countdown-themed .btn-primary {
+  background: var(--countdown-button-background, var(--color-primary));
+  color: var(--countdown-button-foreground, var(--color-primary-contrast));
 }
 
 .milestone-check span {
