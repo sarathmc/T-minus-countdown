@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Countdown, CreateCountdownInput } from '../../domain/models/countdown.model';
+import { DEFAULT_COUNTDOWN_THEME } from '../../domain/models/countdown-theme.model';
 import { MilestonePlannerService } from './milestone-planner.service';
 
 function generateId(): string {
@@ -44,6 +45,7 @@ export class CountdownFactoryService {
         target.toISOString(),
         input.milestonePreset ?? 'standard'
       ),
+      theme: { ...DEFAULT_COUNTDOWN_THEME },
       createdAt: now,
       updatedAt: now,
     };

@@ -56,28 +56,29 @@ export const routes: Routes = [
     title: 'Backup & restore · T-Minus Countdown',
   },
   {
-    path: 'wallpaper-studio',
+    path: 'theme-studio',
     loadComponent: () =>
       import('./features/wallpaper-studio/wallpaper-studio.component').then(
         (m) => m.WallpaperStudioComponent
       ),
-    title: 'Wallpaper studio · T-Minus Countdown',
+    title: 'Theme Studio · T-Minus Countdown',
+  },
+  {
+    path: 'theme-studio/:countdownId',
+    loadComponent: () =>
+      import('./features/wallpaper-studio/wallpaper-studio.component').then(
+        (m) => m.WallpaperStudioComponent
+      ),
+    title: 'Theme Studio · T-Minus Countdown',
   },
   {
     path: 'wallpaper-studio',
-    loadComponent: () =>
-      import('./features/wallpaper-studio/wallpaper-studio.component').then(
-        (m) => m.WallpaperStudioComponent
-      ),
-    title: 'Wallpaper studio · T-Minus Countdown',
+    pathMatch: 'full',
+    redirectTo: 'theme-studio',
   },
   {
     path: 'wallpaper-studio/:countdownId',
-    loadComponent: () =>
-      import('./features/wallpaper-studio/wallpaper-studio.component').then(
-        (m) => m.WallpaperStudioComponent
-      ),
-    title: 'Wallpaper studio · T-Minus Countdown',
+    redirectTo: 'theme-studio/:countdownId',
   },
   { path: '**', redirectTo: 'dashboard' },
 ];

@@ -1,6 +1,6 @@
 <section class="studio">
   <header class="page-heading">
-    <div><p class="eyebrow">MAKE IT YOURS</p><h1>Wallpaper studio</h1><p>Design a focused reminder for your screen.</p></div>
+    <div><p class="eyebrow">MAKE IT YOURS</p><h1>Theme Studio</h1><p>Shape how this countdown looks throughout the app.</p></div>
     @if (countdowns().length) {
       <label class="countdown-select" for="countdown-picker">Countdown</label>
       <select id="countdown-picker" [value]="countdownId()" (change)="selectCountdown($any($event.target).value)">
@@ -10,19 +10,19 @@
   </header>
 
   @if (!countdowns().length) {
-    <app-empty-state title="Create a countdown first" message="Your wallpaper is built from a countdown and its milestones. Add one to get started." />
+    <app-empty-state title="Create a countdown first" message="Your theme is saved with a countdown. Add one to get started." />
   } @else if (!countdown()) {
     <app-empty-state title="Countdown not found" message="This countdown may have been removed. Choose another countdown above." />
   } @else {
     <div class="workspace">
       <div class="editor">
-        <section class="control-section"><h2>Choose a design</h2>
-          <div class="templates" role="group" aria-label="Wallpaper templates">
-            @for (template of templates; track template.id) {
-              <button type="button" class="template" [class.selected]="options().template === template.id"
-                [attr.aria-pressed]="options().template === template.id" (click)="chooseTemplate(template.id)">
-                <span class="swatch" [style.background]="template.background" [style.color]="template.foreground">T–</span>
-                <span><strong>{{ template.name }}</strong><small>{{ template.description }}</small></span>
+        <section class="control-section"><h2>Choose a theme</h2>
+          <div class="templates" role="group" aria-label="Countdown themes">
+            @for (theme of themes; track theme.id) {
+              <button type="button" class="template" [class.selected]="options().template === theme.id"
+                [attr.aria-pressed]="options().template === theme.id" (click)="chooseTheme(theme.id)">
+                <span class="swatch" [style.background]="theme.background" [style.color]="theme.text">T–</span>
+                <span><strong>{{ theme.name }}</strong><small>{{ theme.id === 'milestone' ? 'Keep progress and checkpoints in view.' : 'A ready-to-use countdown appearance.' }}</small></span>
               </button>
             }
           </div>
@@ -37,7 +37,9 @@
         <section class="control-section"><h2>Appearance</h2>
           <div class="color-controls">
             <label>Background <input type="color" [value]="options().background" (input)="update('background', $any($event.target).value)" /></label>
+            <label>Surface <input type="color" [value]="options().surface" (input)="update('surface', $any($event.target).value)" /></label>
             <label>Text <input type="color" [value]="options().foreground" (input)="update('foreground', $any($event.target).value)" /></label>
+            <label>Secondary <input type="color" [value]="options().secondaryText" (input)="update('secondaryText', $any($event.target).value)" /></label>
             <label>Accent <input type="color" [value]="options().accent" (input)="update('accent', $any($event.target).value)" /></label>
           </div>
           <label class="field">Typography
@@ -52,7 +54,7 @@
             <select [value]="options().alignment" (change)="update('alignment', $any($event.target).value)"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>
           </label>
         </section>
-        <section class="control-section"><h2>Show on wallpaper</h2>
+        <section class="control-section"><h2>Preview content</h2>
           <label class="check"><input type="checkbox" [checked]="options().showTitle" (change)="update('showTitle', $any($event.target).checked)" />Countdown title</label>
           <label class="check"><input type="checkbox" [checked]="options().showTimer" (change)="update('showTimer', $any($event.target).checked)" />Live countdown</label>
           <label class="check"><input type="checkbox" [checked]="options().showDate" (change)="update('showDate', $any($event.target).checked)" />Target date</label>
@@ -60,8 +62,8 @@
         </section>
       </div>
 
-      <section class="preview-panel" aria-label="Wallpaper preview">
-        <div class="preview-toolbar"><div><h2>Live preview</h2><p>Updates as you customize</p></div><button type="button" class="btn btn-ghost" (click)="reset()">Reset</button></div>
+      <section class="preview-panel" aria-label="Countdown theme preview">
+        <div class="preview-toolbar"><div><h2>Live preview</h2><p>Updates as you customize</p></div><button type="button" class="btn btn-ghost" (click)="reset()">Reset theme</button></div>
         <div class="preview-wrap" [class.desktop]="options().format === 'desktop'">
           <article class="wallpaper" [ngStyle]="previewStyle()" [class.bold]="options().template === 'bold'" [class.milestone-template]="options().template === 'milestone'">
             <div class="preview-content">
@@ -73,8 +75,12 @@
             <span class="brand-note" aria-hidden="true">T—MINUS</span>
           </article>
         </div>
+        @if (message()) { <p class="success" role="status">{{ message() }}</p> }
         @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-        <button type="button" class="btn btn-primary download" [disabled]="exporting()" (click)="download()">{{ exporting() ? 'Preparing PNG…' : 'Download PNG' }}</button>
+        <div class="preview-actions">
+          <button type="button" class="btn btn-primary" (click)="applyTheme()">Apply theme</button>
+          <button type="button" class="btn btn-secondary" [disabled]="exporting()" (click)="download()">{{ exporting() ? 'Preparing PNG…' : 'Export as Wallpaper' }}</button>
+        </div>
       </section>
     </div>
   }

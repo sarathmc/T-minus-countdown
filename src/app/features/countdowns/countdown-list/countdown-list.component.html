@@ -36,7 +36,7 @@
 } @else {
   <ul class="countdown-list">
     @for (countdown of filtered(); track countdown.id) {
-      <li class="card countdown-row">
+      <li class="card countdown-row countdown-themed" [ngStyle]="themeStyle(countdown)">
         <div class="countdown-main">
           <div class="countdown-title-row">
             <h2>

@@ -1,4 +1,5 @@
 import { Milestone } from './milestone.model';
+import { CountdownTheme } from './countdown-theme.model';
 
 export type CountdownStatus = 'active' | 'paused' | 'archived';
 
@@ -26,6 +27,8 @@ export interface Countdown {
   category: CountdownCategory;
   status: CountdownStatus;
   milestones: Milestone[];
+  /** Optional for backwards compatibility; legacy records use the default theme. */
+  theme?: CountdownTheme;
   createdAt: string;
   updatedAt: string;
 }

@@ -68,6 +68,8 @@ import { formatTimePartsForScreenReader } from '../../utils/time-remaining.util'
         font-size: var(--font-size-2xl);
         font-weight: 700;
         font-variant-numeric: tabular-nums;
+        color: var(--countdown-accent, var(--color-text));
+        font-family: var(--countdown-digit-font, inherit);
       }
 
       .timer-compact .value {
@@ -76,7 +78,8 @@ import { formatTimePartsForScreenReader } from '../../utils/time-remaining.util'
 
       .label {
         font-size: var(--font-size-xs);
-        color: var(--color-text-muted);
+        color: var(--countdown-secondary-text, var(--color-text-muted));
+        font-family: var(--countdown-label-font, inherit);
         text-transform: uppercase;
         letter-spacing: 0.05em;
       }

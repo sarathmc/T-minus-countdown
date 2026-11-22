@@ -9,7 +9,8 @@ import { Milestone } from '../../domain/models/milestone.model';
 import { CountdownFactoryService } from './countdown-factory.service';
 import { MilestonePlannerService } from './milestone-planner.service';
 import { inject } from '@angular/core';
-import { COUNTDOWN_REPOSITORY, isCountdownRecord } from './countdown-repository';
+import { COUNTDOWN_REPOSITORY, isCountdownRecord, normalizeCountdown, normalizeCountdownTheme } from './countdown-repository';
+import { CountdownTheme } from '../../domain/models/countdown-theme.model';
 import { AuthSessionService } from './auth-session.service';
 import { SyncQueueService } from './sync-queue.service';
 
@@ -61,11 +62,11 @@ export class CountdownStoreService {
   private readonly auth = inject(AuthSessionService);
   private readonly syncQueue = inject(SyncQueueService);
 
-  private readonly _countdowns = signal<Countdown[]>(readFromStorage());
+  private readonly _countdowns = signal<Countdown[]>(readFromStorage().map(normalizeCountdown));
   private readonly _loaded = signal(true);
   private writeQueue: Promise<void> = Promise.resolve();
   private mutationVersion = 0;
-  private lastPersisted = new Map(readFromStorage().map((countdown) => [countdown.id, countdown]));
+  private lastPersisted = new Map(readFromStorage().map(normalizeCountdown).map((countdown) => [countdown.id, countdown]));
 
   constructor() {
     const legacy = readFromStorage();
@@ -77,7 +78,7 @@ export class CountdownStoreService {
         await this.repository.saveAll(this._countdowns());
         return;
       }
-      const current = saved.length ? saved : legacy;
+      const current = (saved.length ? saved : legacy).map(normalizeCountdown);
       if (!saved.length && legacy.length) {
         await this.repository.saveAll(legacy);
         try { localStorage.removeItem(STORAGE_KEY); } catch { /* Retain data if browser storage is restricted. */ }
@@ -116,10 +117,11 @@ export class CountdownStoreService {
 
   applyRemoteVersion(value: unknown): void {
     if (!isCountdownRecord(value)) throw new Error('The remote countdown payload is invalid.');
+    const normalized = normalizeCountdown(value);
     const current = this._countdowns();
-    const next = current.some((item) => item.id === value.id)
-      ? current.map((item) => item.id === value.id ? value : item)
-      : [...current, value];
+    const next = current.some((item) => item.id === normalized.id)
+      ? current.map((item) => item.id === normalized.id ? normalized : item)
+      : [...current, normalized];
     this._countdowns.set(next);
     this.lastPersisted = new Map(next.map((countdown) => [countdown.id, countdown]));
     writeToStorage(next);
@@ -142,7 +144,7 @@ export class CountdownStoreService {
       return true;
     });
     if (additions.length) {
-      this._countdowns.update((current) => [...current, ...additions]);
+      this._countdowns.update((current) => [...current, ...additions.map(normalizeCountdown)]);
       this.persist();
     }
     return additions.length;
@@ -162,6 +164,14 @@ export class CountdownStoreService {
     >
   ): void {
     this.patch(id, (c) => ({ ...c, ...changes, updatedAt: new Date().toISOString() }));
+  }
+
+  updateTheme(id: string, theme: CountdownTheme): void {
+    this.patch(id, (countdown) => ({
+      ...countdown,
+      theme: normalizeCountdownTheme(theme),
+      updatedAt: new Date().toISOString(),
+    }));
   }
 
   remove(id: string): void {

@@ -56,7 +56,7 @@ describe('WallpaperStudioComponent', () => {
     expect((fixture.nativeElement as HTMLSelectElement).querySelector('select')?.value).toBe(second.id);
   });
 
-  it('loads the first available countdown on direct Wallpaper Studio navigation', () => {
+  it('loads the first available countdown on direct Theme Studio navigation', () => {
     const { fixture } = setup();
     const countdown = createCountdown('Direct entry');
     fixture.detectChanges();
@@ -102,5 +102,46 @@ describe('WallpaperStudioComponent', () => {
     component.update('showTitle', false);
     expect(component.options()).toEqual(jasmine.objectContaining({ template: 'gradient', format: 'desktop', showTitle: false }));
     expect(component.options().background).toBe('#293d75');
+  });
+
+  it('applies independent themes to individual countdowns', () => {
+    const { fixture, paramMap } = setup();
+    const store = TestBed.inject(CountdownStoreService);
+    const first = createCountdown('First theme');
+    const second = createCountdown('Second theme');
+    paramMap.next(convertToParamMap({ countdownId: first.id }));
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      chooseTheme: (id: 'bold') => void;
+      applyTheme: () => void;
+    };
+    component.chooseTheme('bold');
+    component.applyTheme();
+
+    expect(store.byId(first.id)?.theme?.id).toBe('bold');
+    expect(store.byId(second.id)?.theme?.id).toBe('minimal-light');
+  });
+
+  it('resets a draft to the selected countdown theme and normalizes legacy records', () => {
+    const { fixture, paramMap } = setup();
+    const store = TestBed.inject(CountdownStoreService);
+    const countdown = createCountdown('Reset theme');
+    const legacy = { ...countdown, theme: undefined };
+    store.remove(countdown.id);
+    store.applyRemoteVersion(legacy);
+    paramMap.next(convertToParamMap({ countdownId: countdown.id }));
+    fixture.detectChanges();
+
+    const component = fixture.componentInstance as unknown as {
+      chooseTheme: (id: 'gradient') => void;
+      reset: () => void;
+      options: () => { template: string };
+    };
+    component.chooseTheme('gradient');
+    component.reset();
+
+    expect(store.byId(countdown.id)?.theme?.id).toBe('minimal-light');
+    expect(component.options().template).toBe('minimal-light');
   });
 });

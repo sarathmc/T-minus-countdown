@@ -38,11 +38,11 @@
     </div>
   </header>
 
-  <section class="card timer-panel">
+  <section class="card timer-panel countdown-themed" [ngStyle]="themeStyle(c)">
     <app-countdown-timer [targetDate]="c.targetDate" />
   </section>
 
-  <section class="card milestones-panel">
+  <section class="card milestones-panel countdown-themed" [ngStyle]="themeStyle(c)">
     <div class="milestones-header">
       <div>
         <h2>Milestones</h2>

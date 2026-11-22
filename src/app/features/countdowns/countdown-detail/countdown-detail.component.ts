@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgStyle } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CountdownStoreService } from '../../../core/services/countdown-store.service';
 import { CountdownCalculatorService } from '../../../core/services/countdown-calculator.service';
 import { MilestonePlannerService } from '../../../core/services/milestone-planner.service';
 import { CountdownTimerComponent } from '../../../shared/components/countdown-timer/countdown-timer.component';
+import { Countdown } from '../../../domain/models/countdown.model';
 import { ProgressBarComponent } from '../../../shared/components/progress-bar/progress-bar.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
+import { themeStyle as buildThemeStyle, themeForCountdown } from '../../../shared/utils/countdown-theme.util';
 
 @Component({
   selector: 'app-countdown-detail',
@@ -18,6 +20,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
     ReactiveFormsModule,
     RouterLink,
     DatePipe,
+    NgStyle,
     CountdownTimerComponent,
     ProgressBarComponent,
     ConfirmDialogComponent,
@@ -45,6 +48,10 @@ export class CountdownDetailComponent {
     const countdown = this.countdown();
     return countdown ? this.milestonePlanner.completionPercentage(countdown.milestones) : 0;
   });
+
+  protected themeStyle(countdown: Countdown): Record<string, string> {
+    return buildThemeStyle(themeForCountdown(countdown));
+  }
 
   protected readonly showAddMilestone = signal(false);
   protected readonly milestoneError = signal<string | null>(null);

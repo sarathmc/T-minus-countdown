@@ -25,6 +25,7 @@ describe('AppComponent', () => {
     );
     expect(links).toContain('Dashboard');
     expect(links).toContain('Countdowns');
+    expect(links).toContain('Theme Studio');
   });
 
   it('should render a skip link for keyboard users', () => {

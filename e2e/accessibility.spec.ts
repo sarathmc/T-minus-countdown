@@ -22,7 +22,7 @@ test.describe('WCAG automated accessibility smoke checks', () => {
     await createCountdown(page, 'Accessible deadline');
     await expectAccessible(page, 'countdown detail');
     const countdownId = page.url().split('/').pop();
-    await page.goto(`/wallpaper-studio/${countdownId}`);
+    await page.goto(`/theme-studio/${countdownId}`);
     await expectAccessible(page, 'wallpaper studio');
     await page.goto(`/countdowns/${countdownId}`);
     await page.getByRole('button', { name: 'Add milestone' }).click();

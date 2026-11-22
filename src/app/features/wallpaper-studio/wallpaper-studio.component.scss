@@ -54,6 +54,8 @@ h2 { font-size: 1rem; margin: 0 0 1rem; }
 .preview-milestones .done { opacity: .55; text-decoration: line-through; }
 .brand-note { position: absolute; bottom: 5%; left: 0; width: 100%; text-align: center; font: 700 .38em var(--wallpaper-font); letter-spacing: .24em; }
 .error { margin: .8rem 0; color: var(--color-danger); font-size: .88rem; }
-.download { display: block; width: 100%; margin-top: 1.1rem; }
+.success { margin: .8rem 0; color: var(--color-success); font-size: .88rem; }
+.preview-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-top: 1.1rem; }
+.preview-actions .btn { width: 100%; }
 @media (min-width: 60rem) { .workspace { grid-template-columns: minmax(20rem, .8fr) minmax(30rem, 1.2fr); } .templates { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 48rem) { .page-heading { align-items: stretch; flex-direction: column; } .countdown-select select { width: 100%; } .workspace { grid-template-columns: 1fr; } .preview-panel { position: static; grid-row: 1; } .preview-wrap { width: min(76%, 19rem); } .preview-wrap.desktop { width: 100%; } }
+@media (max-width: 48rem) { .page-heading { align-items: stretch; flex-direction: column; } .countdown-select select { width: 100%; } .workspace { grid-template-columns: 1fr; } .preview-panel { position: static; grid-row: 1; } .preview-wrap { width: min(76%, 19rem); } .preview-wrap.desktop { width: 100%; } .preview-actions { grid-template-columns: 1fr; } }

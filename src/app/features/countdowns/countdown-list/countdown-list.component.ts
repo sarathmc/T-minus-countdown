@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NgStyle } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CountdownStoreService } from '../../../core/services/countdown-store.service';
-import { CountdownStatus } from '../../../domain/models/countdown.model';
+import { Countdown, CountdownStatus } from '../../../domain/models/countdown.model';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state.component';
 import { CountdownTimerComponent } from '../../../shared/components/countdown-timer/countdown-timer.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { themeStyle as buildThemeStyle, themeForCountdown } from '../../../shared/utils/countdown-theme.util';
 
 type StatusFilter = CountdownStatus | 'all';
 
@@ -12,7 +14,7 @@ type StatusFilter = CountdownStatus | 'all';
   selector: 'app-countdown-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyStateComponent, CountdownTimerComponent, ConfirmDialogComponent],
+  imports: [RouterLink, NgStyle, EmptyStateComponent, CountdownTimerComponent, ConfirmDialogComponent],
   templateUrl: './countdown-list.component.html',
   styleUrl: './countdown-list.component.scss',
 })
@@ -33,6 +35,10 @@ export class CountdownListComponent {
     const filter = this.filter();
     const all = this.store.countdowns();
     return filter === 'all' ? all : all.filter((c) => c.status === filter);
+  }
+
+  protected themeStyle(countdown: Countdown): Record<string, string> {
+    return buildThemeStyle(themeForCountdown(countdown));
   }
 
   protected setFilter(filter: StatusFilter): void {

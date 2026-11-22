@@ -40,7 +40,7 @@
     } @else {
       <ul class="countdown-cards">
         @for (countdown of store.upcoming().slice(0, 4); track countdown.id) {
-          <li class="card countdown-card">
+          <li class="card countdown-card countdown-themed" [ngStyle]="themeStyle(countdown)">
             <div class="countdown-card-header">
               <h3>
                 <a [routerLink]="['/countdowns', countdown.id]">{{ countdown.title }}</a>

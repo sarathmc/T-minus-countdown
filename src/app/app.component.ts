@@ -59,7 +59,7 @@ export class AppComponent {
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Countdowns', path: '/countdowns' },
     { label: 'Reminders', path: '/reminders' },
-    { label: 'Wallpaper studio', path: '/wallpaper-studio' },
+    { label: 'Theme Studio', path: '/theme-studio' },
     { label: 'Backup', path: '/settings/backup' },
     { label: 'Account', path: '/account' },
   ];

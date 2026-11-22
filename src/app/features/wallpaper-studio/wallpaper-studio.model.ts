@@ -16,7 +16,9 @@ export interface WallpaperOptions {
   format: WallpaperFormat;
   template: WallpaperTemplateId;
   background: string;
+  surface?: string;
   foreground: string;
+  secondaryText?: string;
   accent: string;
   font: string;
   fontSize: number;

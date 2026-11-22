@@ -37,10 +37,18 @@
   display: flex;
   justify-content: center;
   margin-bottom: var(--space-5);
+  background: var(--countdown-surface, var(--color-surface));
+  color: var(--countdown-text, var(--color-text));
+  border: var(--countdown-border, 1px solid var(--color-border));
+  border-radius: var(--countdown-radius, var(--radius-lg));
 }
 
 .milestones-panel {
   margin-bottom: var(--space-5);
+  background: var(--countdown-surface, var(--color-surface));
+  color: var(--countdown-text, var(--color-text));
+  border: var(--countdown-border, 1px solid var(--color-border));
+  border-radius: var(--countdown-radius, var(--radius-lg));
 }
 
 .milestones-header {

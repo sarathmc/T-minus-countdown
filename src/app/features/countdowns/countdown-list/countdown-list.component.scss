@@ -29,6 +29,10 @@
   align-items: flex-start;
   gap: var(--space-5);
   flex-wrap: wrap;
+  background: var(--countdown-surface, var(--color-surface));
+  color: var(--countdown-text, var(--color-text));
+  border: var(--countdown-border, 1px solid var(--color-border));
+  border-radius: var(--countdown-radius, var(--radius-lg));
 }
 
 .countdown-main {
@@ -49,7 +53,7 @@
 }
 
 .countdown-title-row a {
-  color: var(--color-text);
+  color: var(--countdown-text, var(--color-text));
   text-decoration: none;
 }
 

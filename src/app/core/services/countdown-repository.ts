@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { Countdown } from '../../domain/models/countdown.model';
+import { CountdownTheme, DEFAULT_COUNTDOWN_THEME, isCountdownTheme } from '../../domain/models/countdown-theme.model';
 
 export interface CountdownRepository {
   load(): Promise<Countdown[]>;
@@ -75,5 +76,14 @@ export function isCountdownRecord(value: unknown): value is Countdown {
     typeof record.targetDate === 'string' && Number.isFinite(Date.parse(record.targetDate)) &&
     typeof record.timeZone === 'string' && Number.isFinite(Date.parse(record.createdAt ?? '')) &&
     Number.isFinite(Date.parse(record.updatedAt ?? '')) && categories.includes(record.category ?? '') &&
-    ['active', 'paused', 'archived'].includes(record.status ?? '') && validMilestones;
+    ['active', 'paused', 'archived'].includes(record.status ?? '') && validMilestones &&
+    (record.theme === undefined || isCountdownTheme(record.theme));
+}
+
+export function normalizeCountdownTheme(theme: CountdownTheme | undefined): CountdownTheme {
+  return isCountdownTheme(theme) ? { ...theme } : { ...DEFAULT_COUNTDOWN_THEME };
+}
+
+export function normalizeCountdown(countdown: Countdown): Countdown {
+  return { ...countdown, theme: normalizeCountdownTheme(countdown.theme) };
 }

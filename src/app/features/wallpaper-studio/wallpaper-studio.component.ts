@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe, DecimalPipe, NgStyle } from '@angular/common';
@@ -7,9 +7,18 @@ import { CountdownCalculatorService } from '../../core/services/countdown-calcul
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { WallpaperExportService } from './wallpaper-export.service';
 import { WallpaperOptions, WALLPAPER_TEMPLATES, wallpaperDimensions } from './wallpaper-studio.model';
+import {
+  COUNTDOWN_THEME_PRESETS,
+  CountdownTheme,
+  countdownThemeById,
+  DEFAULT_COUNTDOWN_THEME,
+} from '../../domain/models/countdown-theme.model';
+import { themeForCountdown } from '../../shared/utils/countdown-theme.util';
 
 const DEFAULT_OPTIONS: WallpaperOptions = {
-  format: 'mobile', template: 'minimal-light', background: '#f4f0e8', foreground: '#24231f',
+  format: 'mobile', template: DEFAULT_COUNTDOWN_THEME.id, background: DEFAULT_COUNTDOWN_THEME.background,
+  surface: DEFAULT_COUNTDOWN_THEME.surface, foreground: DEFAULT_COUNTDOWN_THEME.text,
+  secondaryText: DEFAULT_COUNTDOWN_THEME.secondaryText,
   accent: '#a46b43', font: 'Georgia, serif', fontSize: 8, alignment: 'center',
   showTitle: true, showTimer: true, showDate: true, showMilestones: true,
 };
@@ -50,6 +59,7 @@ export class WallpaperStudioComponent {
   private readonly exporter = inject(WallpaperExportService);
 
   protected readonly templates = WALLPAPER_TEMPLATES;
+  protected readonly themes = COUNTDOWN_THEME_PRESETS;
   protected readonly countdowns = this.store.countdowns;
   private readonly routeParamMap = toSignal(this.route.paramMap, {
     initialValue: this.route.snapshot.paramMap,
@@ -63,6 +73,7 @@ export class WallpaperStudioComponent {
   protected readonly options = signal<WallpaperOptions>(readWallpaperOptions());
   protected readonly time = signal(this.calculator.getTimeParts(this.countdown()?.targetDate ?? new Date()));
   protected readonly error = signal('');
+  protected readonly message = signal('');
   protected readonly exporting = signal(false);
   protected readonly dimensions = computed(() => wallpaperDimensions(this.options().format));
   protected readonly orderedMilestones = computed(() => [...(this.countdown()?.milestones ?? [])]
@@ -85,8 +96,15 @@ export class WallpaperStudioComponent {
     const titleLength = this.countdown()?.title.length ?? 0;
     return Math.max(0.34, Math.min(0.75, 0.75 - Math.max(0, titleLength - 24) * 0.012));
   });
+  private loadedThemeCountdownId = '';
 
   constructor() {
+    effect(() => {
+      const countdown = this.countdown();
+      if (!countdown || countdown.id === this.loadedThemeCountdownId) return;
+      this.loadedThemeCountdownId = countdown.id;
+      this.options.update((current) => ({ ...current, ...this.optionsForTheme(themeForCountdown(countdown)) }));
+    });
     const interval = setInterval(() => {
       const countdown = this.countdown();
       if (countdown) this.time.set(this.calculator.getTimeParts(countdown.targetDate));
@@ -100,20 +118,45 @@ export class WallpaperStudioComponent {
   }
 
   protected chooseTemplate(id: WallpaperOptions['template']): void {
-    const template = WALLPAPER_TEMPLATES.find((item) => item.id === id);
-    if (template) this.options.update((current) => ({ ...current, template: id,
-      background: template.background, foreground: template.foreground, accent: template.accent, font: template.font }));
-    this.persistOptions();
+    this.chooseTheme(id);
+  }
+
+  protected chooseTheme(id: WallpaperOptions['template']): void {
+    const theme = countdownThemeById(id);
+    this.options.update((current) => ({ ...current, ...this.optionsForTheme(theme) }));
+  }
+
+  protected applyTheme(): void {
+    const countdown = this.countdown();
+    if (!countdown) return;
+    this.store.updateTheme(countdown.id, this.themeFromOptions(this.options()));
+    this.message.set('Theme applied to this countdown.');
+  }
+
+  protected themeFromOptions(options: WallpaperOptions): CountdownTheme {
+    const preset = countdownThemeById(options.template);
+    return {
+      ...preset,
+      background: options.background,
+      surface: options.surface ?? preset.surface,
+      text: options.foreground,
+      secondaryText: options.secondaryText ?? preset.secondaryText,
+      accent: options.accent,
+      digitFont: options.font,
+      labelFont: options.font,
+    };
   }
 
   protected selectCountdown(id: string): void {
-    void this.router.navigate(['/wallpaper-studio', id]);
+    void this.router.navigate(['/theme-studio', id]);
   }
 
   protected reset(): void {
-    this.options.set({ ...DEFAULT_OPTIONS });
-    this.persistOptions();
+    const countdown = this.countdown();
+    const theme = countdown ? themeForCountdown(countdown) : DEFAULT_COUNTDOWN_THEME;
+    this.options.update((current) => ({ ...current, ...this.optionsForTheme(theme) }));
     this.error.set('');
+    this.message.set('Theme draft reset to its defaults.');
   }
 
   protected async download(): Promise<void> {
@@ -134,6 +177,18 @@ export class WallpaperStudioComponent {
     } finally {
       this.exporting.set(false);
     }
+  }
+
+  private optionsForTheme(theme: CountdownTheme): Partial<WallpaperOptions> {
+    return {
+      template: theme.id,
+      background: theme.background,
+      surface: theme.surface,
+      foreground: theme.text,
+      secondaryText: theme.secondaryText,
+      accent: theme.accent,
+      font: theme.digitFont,
+    };
   }
 
   private persistOptions(): void {
