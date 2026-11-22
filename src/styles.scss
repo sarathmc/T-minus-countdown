@@ -112,6 +112,10 @@ textarea {
   outline-offset: 2px;
 }
 
+.countdown-themed :is(a, button, input, select, textarea):focus-visible {
+  outline-color: var(--countdown-focus, var(--color-focus-ring));
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -159,32 +163,33 @@ textarea {
 }
 
 .btn-primary {
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
+  background: var(--countdown-button-background, var(--color-primary));
+  color: var(--countdown-button-foreground, var(--color-primary-contrast));
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--countdown-link-hover, var(--color-primary-hover));
+  color: var(--countdown-button-foreground, var(--color-primary-contrast));
 }
 
 .btn-secondary {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  color: var(--color-text);
+  background: var(--countdown-surface, var(--color-surface));
+  border-color: var(--countdown-secondary-text, var(--color-border));
+  color: var(--countdown-text, var(--color-text));
 }
 
 .btn-secondary:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--countdown-link-hover, var(--color-primary));
+  color: var(--countdown-link-hover, var(--color-primary));
 }
 
 .btn-ghost {
   background: transparent;
-  color: var(--color-text-muted);
+  color: var(--countdown-secondary-text, var(--color-text-muted));
 }
 
 .btn-ghost:hover:not(:disabled) {
-  color: var(--color-text);
+  color: var(--countdown-link-hover, var(--color-text));
 }
 
 .btn-danger {
@@ -202,8 +207,8 @@ textarea {
 }
 
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--countdown-surface, var(--color-surface));
+  border: 1px solid var(--countdown-secondary-text, var(--color-border));
   border-radius: var(--radius-lg);
   padding: var(--space-5);
   box-shadow: var(--shadow-sm);
