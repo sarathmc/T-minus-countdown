@@ -64,6 +64,14 @@ export const routes: Routes = [
     title: 'Wallpaper studio · T-Minus Countdown',
   },
   {
+    path: 'wallpaper-studio',
+    loadComponent: () =>
+      import('./features/wallpaper-studio/wallpaper-studio.component').then(
+        (m) => m.WallpaperStudioComponent
+      ),
+    title: 'Wallpaper studio · T-Minus Countdown',
+  },
+  {
     path: 'wallpaper-studio/:countdownId',
     loadComponent: () =>
       import('./features/wallpaper-studio/wallpaper-studio.component').then(

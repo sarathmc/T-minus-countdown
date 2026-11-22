@@ -2,11 +2,10 @@
   <header class="page-heading">
     <div><p class="eyebrow">MAKE IT YOURS</p><h1>Wallpaper studio</h1><p>Design a focused reminder for your screen.</p></div>
     @if (countdowns().length) {
-      <label class="countdown-select">Countdown
-        <select [value]="countdownId()" (change)="selectCountdown($any($event.target).value)">
+      <label class="countdown-select" for="countdown-picker">Countdown</label>
+      <select id="countdown-picker" [value]="countdownId()" (change)="selectCountdown($any($event.target).value)">
           @for (item of countdowns(); track item.id) { <option [value]="item.id">{{ item.title }}</option> }
-        </select>
-      </label>
+      </select>
     }
   </header>
 

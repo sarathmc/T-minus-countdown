@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { CountdownStoreService } from '../../core/services/countdown-store.service';
 import { WallpaperStudioComponent } from './wallpaper-studio.component';
 
@@ -9,44 +10,88 @@ describe('WallpaperStudioComponent', () => {
   });
   afterEach(() => localStorage.clear());
 
-  function setup(id: string) {
+  function setup(id = '') {
     TestBed.resetTestingModule();
+    const paramMap = new BehaviorSubject(convertToParamMap(id ? { countdownId: id } : {}));
     TestBed.configureTestingModule({
       imports: [WallpaperStudioComponent],
       providers: [provideRouter([]), {
         provide: ActivatedRoute,
-        useValue: { snapshot: { paramMap: convertToParamMap({ countdownId: id }) } },
+        useValue: { snapshot: { paramMap: paramMap.value }, paramMap: paramMap.asObservable() },
       }],
     });
     const fixture = TestBed.createComponent(WallpaperStudioComponent);
     fixture.detectChanges();
-    return fixture;
+    return { fixture, paramMap };
   }
 
-  it('shows an empty state when there are no countdowns', () => {
-    expect((setup('missing').nativeElement as HTMLElement).textContent).toContain('Create a countdown first');
+  function createCountdown(title: string) {
+    return TestBed.inject(CountdownStoreService).create({
+      title, targetDate: new Date(Date.now() + 30 * 86400000).toISOString(),
+      timeZone: 'UTC', category: 'work',
+    });
+  }
+
+  it('shows the selected countdown preview for an existing countdown', () => {
+    const { fixture, paramMap } = setup();
+    const countdown = createCountdown('Product launch');
+    paramMap.next(convertToParamMap({ countdownId: countdown.id }));
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Product launch');
+    expect((fixture.nativeElement as HTMLElement).querySelector('.wallpaper h3')?.textContent).toBe('Product launch');
   });
 
-  it('handles a missing countdown id and binds a selected countdown', () => {
+  it('switches the preview when the route selection changes', () => {
+    const { fixture, paramMap } = setup();
+    const first = createCountdown('First launch');
+    const second = createCountdown('Second launch');
+
+    paramMap.next(convertToParamMap({ countdownId: first.id }));
+    fixture.detectChanges();
+    paramMap.next(convertToParamMap({ countdownId: second.id }));
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).querySelector('.wallpaper h3')?.textContent).toBe('Second launch');
+    expect((fixture.nativeElement as HTMLSelectElement).querySelector('select')?.value).toBe(second.id);
+  });
+
+  it('loads the first available countdown on direct Wallpaper Studio navigation', () => {
+    const { fixture } = setup();
+    const countdown = createCountdown('Direct entry');
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Direct entry');
+    expect((fixture.nativeElement as HTMLSelectElement).querySelector('select')?.value).toBe(countdown.id);
+  });
+
+  it('falls back to another countdown after the selected countdown is deleted', () => {
+    const { fixture, paramMap } = setup();
     const store = TestBed.inject(CountdownStoreService);
-    store.create({
-      title: 'Existing deadline', targetDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-      timeZone: 'UTC', category: 'work',
-    });
-    expect((setup('unknown').nativeElement as HTMLElement).textContent).toContain('Countdown not found');
-    const countdown = store.create({
-      title: 'Product launch', targetDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-      timeZone: 'UTC', category: 'work',
-    });
-    const fixture = setup(countdown.id);
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Product launch');
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.template').length).toBe(5);
+    const first = createCountdown('Deleted launch');
+    const second = createCountdown('Remaining launch');
+
+    paramMap.next(convertToParamMap({ countdownId: first.id }));
+    fixture.detectChanges();
+    store.remove(first.id);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Remaining launch');
+    expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('Countdown not found');
+    expect((fixture.nativeElement as HTMLSelectElement).querySelector('select')?.value).toBe(second.id);
+  });
+
+  it('shows the empty state only when no countdowns are available', () => {
+    const { fixture } = setup('missing');
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Create a countdown first');
   });
 
   it('applies template and customization changes to preview state', () => {
-    const store = TestBed.inject(CountdownStoreService);
-    const countdown = store.create({ title: 'Study exam', targetDate: new Date(Date.now() + 86400000).toISOString(), timeZone: 'UTC', category: 'study' });
-    const fixture = setup(countdown.id);
+    const { fixture, paramMap } = setup();
+    const countdown = createCountdown('Study exam');
+    paramMap.next(convertToParamMap({ countdownId: countdown.id }));
+    fixture.detectChanges();
     const component = fixture.componentInstance as unknown as {
       chooseTemplate: (id: 'gradient') => void;
       update: (key: 'format' | 'showTitle', value: 'desktop' | false) => void;

@@ -33,4 +33,22 @@ describe('AppComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.skip-link')).toBeTruthy();
   });
+
+  it('opens the mobile navigation and closes it with Escape', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const menuButton = compiled.querySelector('.menu-toggle') as HTMLButtonElement;
+    const navigation = compiled.querySelector('.primary-nav') as HTMLElement;
+
+    menuButton.click();
+    fixture.detectChanges();
+    expect(navigation.classList.contains('open')).toBeTrue();
+    expect(menuButton.getAttribute('aria-expanded')).toBe('true');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(navigation.classList.contains('open')).toBeFalse();
+    expect(menuButton.getAttribute('aria-expanded')).toBe('false');
+  });
 });

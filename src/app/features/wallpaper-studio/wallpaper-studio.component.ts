@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe, DecimalPipe, NgStyle } from '@angular/common';
 import { CountdownStoreService } from '../../core/services/countdown-store.service';
@@ -50,7 +51,14 @@ export class WallpaperStudioComponent {
 
   protected readonly templates = WALLPAPER_TEMPLATES;
   protected readonly countdowns = this.store.countdowns;
-  protected readonly countdownId = signal(this.route.snapshot.paramMap.get('countdownId') ?? '');
+  private readonly routeParamMap = toSignal(this.route.paramMap, {
+    initialValue: this.route.snapshot.paramMap,
+  });
+  protected readonly countdownId = computed(() => {
+    const requestedId = this.routeParamMap().get('countdownId');
+    const available = this.countdowns();
+    return available.some((item) => item.id === requestedId) ? requestedId! : available[0]?.id ?? '';
+  });
   protected readonly countdown = computed(() => this.store.byId(this.countdownId()));
   protected readonly options = signal<WallpaperOptions>(readWallpaperOptions());
   protected readonly time = signal(this.calculator.getTimeParts(this.countdown()?.targetDate ?? new Date()));
@@ -94,7 +102,6 @@ export class WallpaperStudioComponent {
   }
 
   protected selectCountdown(id: string): void {
-    this.countdownId.set(id);
     void this.router.navigate(['/wallpaper-studio', id]);
   }
 

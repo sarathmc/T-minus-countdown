@@ -11,55 +11,89 @@ import { PushSubscriptionService } from '../../core/services/push-subscription.s
   selector: 'app-account',
   imports: [FormsModule, CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styleUrl: './account.component.scss',
   template: `
-    <section class="page-section">
-      <header class="page-heading"><p class="eyebrow">Account</p><h1>Account and sync</h1>
-        <p>Guest countdowns stay on this device. Synchronization preserves local changes and requires explicit conflict decisions.</p>
+    <section class="account-page">
+      <header class="page-heading account-heading">
+        <p class="eyebrow">Account</p>
+        <h1>Account and sync</h1>
+        <p>Guest countdowns stay on this device. Sign in when you want to prepare local changes for synchronization.</p>
       </header>
       @if (auth.session(); as session) {
-        <article class="card">
-          <h2>Signed in as {{ session.email || session.userId }}</h2>
-          <p>{{ store.countdowns().length }} local countdowns are available to prepare for migration.</p>
-          <p role="status">{{ message() }}</p>
-          <button class="btn btn-primary" type="button" (click)="prepareMigration()">Review and queue local records</button>
-          <button class="btn btn-secondary" type="button" (click)="auth.logout()">Sign out</button>
-          <h3>Server notifications</h3>
-          <p role="status">Permission: {{ push.permission() }}. {{ push.supported() ? (push.subscription() ? 'Subscription active.' : 'Not subscribed.') : 'Push is unsupported in this browser.' }}</p>
-          <button class="btn btn-secondary" type="button" (click)="enablePush()" [disabled]="!push.supported()">Enable server notifications</button>
-          <button class="btn btn-secondary" type="button" (click)="disablePush()" [disabled]="!push.subscription()">Disable server notifications</button>
-          <h3>Migration preview</h3>
-          <ul>@for (item of store.countdowns(); track item.id) { <li>{{ item.title }} — {{ item.targetDate | date }}</li> }</ul>
-          <button class="btn btn-secondary" type="button" (click)="showQueue()">Show pending sync status</button>
-          <button class="btn btn-secondary" type="button" (click)="retrySync()">Retry recoverable sync</button>
-          <p role="status">{{ summary() }}</p>
-          @for (entry of queueEntries(); track entry.id) {
-            <p>{{ entry.resourceId }} · {{ entry.status }} · {{ entry.lastError || 'Waiting' }}</p>
-          }
-          <h3>Conflicts requiring attention</h3>
-          @for (conflict of conflicts(); track conflict.id) {
-            <article class="card" aria-label="Synchronization conflict">
-              <p><strong>{{ conflict.entity }}</strong> {{ conflict.resourceId }} · detected {{ conflict.detectedAt | date:'short' }}</p>
-              <p>{{ conflict.remoteDeleted ? 'The remote record was deleted.' : 'The remote record changed.' }} Local revision: {{ conflict.localExpectedRevision ?? 'create' }}. Remote revision: {{ conflict.currentServerRevision ?? 'unavailable' }}.</p>
-              <details><summary>Review local and remote versions</summary><pre>{{ conflict.localPendingVersion | json }}</pre><pre>{{ conflict.remoteServerVersion | json }}</pre></details>
-              <button class="btn btn-secondary" type="button" (click)="resolve(conflict.id, 'keep-local')">Keep local version</button>
-              <button class="btn btn-secondary" type="button" (click)="resolve(conflict.id, 'keep-remote')">Keep remote version</button>
-              <label [for]="'manual-' + conflict.id">Manual resolved JSON</label>
-              <textarea [id]="'manual-' + conflict.id" [ngModel]="manualDrafts[conflict.id] || ''" (ngModelChange)="manualDrafts[conflict.id] = $event"></textarea>
-              <button class="btn btn-secondary" type="button" (click)="resolveManual(conflict)">Submit manual resolution</button>
-            </article>
-          } @empty { <p>No conflicts require attention.</p> }
+        <article class="card account-card">
+          <div class="account-section account-intro">
+            <p class="eyebrow">Connected account</p>
+            <h2>Signed in as {{ session.email || session.userId }}</h2>
+            <p>{{ store.countdowns().length }} local countdowns are available to prepare for migration.</p>
+            <p class="status-message" role="status">{{ message() }}</p>
+            <div class="account-actions">
+              <button class="btn btn-primary" type="button" (click)="prepareMigration()">Review and queue local records</button>
+              <button class="btn btn-secondary" type="button" (click)="auth.logout()">Sign out</button>
+            </div>
+          </div>
+
+          <section class="account-section">
+            <h3>Server notifications</h3>
+            <p role="status">Permission: {{ push.permission() }}. {{ push.supported() ? (push.subscription() ? 'Subscription active.' : 'Not subscribed.') : 'Push is unsupported in this browser.' }}</p>
+            <div class="account-actions">
+              <button class="btn btn-secondary" type="button" (click)="enablePush()" [disabled]="!push.supported()">Enable server notifications</button>
+              <button class="btn btn-secondary" type="button" (click)="disablePush()" [disabled]="!push.subscription()">Disable server notifications</button>
+            </div>
+          </section>
+
+          <section class="account-section">
+            <h3>Migration preview</h3>
+            <ul class="migration-list">@for (item of store.countdowns(); track item.id) { <li>{{ item.title }} — {{ item.targetDate | date }}</li> }</ul>
+            <div class="account-actions">
+              <button class="btn btn-secondary" type="button" (click)="showQueue()">Show pending sync status</button>
+              <button class="btn btn-secondary" type="button" (click)="retrySync()">Retry recoverable sync</button>
+            </div>
+            <p class="status-message" role="status">{{ summary() }}</p>
+            @for (entry of queueEntries(); track entry.id) {
+              <p class="queue-entry">{{ entry.resourceId }} · {{ entry.status }} · {{ entry.lastError || 'Waiting' }}</p>
+            }
+          </section>
+
+          <section class="account-section">
+            <h3>Conflicts requiring attention</h3>
+            @for (conflict of conflicts(); track conflict.id) {
+              <article class="conflict-card" aria-label="Synchronization conflict">
+                <p><strong>{{ conflict.entity }}</strong> {{ conflict.resourceId }} · detected {{ conflict.detectedAt | date:'short' }}</p>
+                <p>{{ conflict.remoteDeleted ? 'The remote record was deleted.' : 'The remote record changed.' }} Local revision: {{ conflict.localExpectedRevision ?? 'create' }}. Remote revision: {{ conflict.currentServerRevision ?? 'unavailable' }}.</p>
+                <details><summary>Review local and remote versions</summary><pre>{{ conflict.localPendingVersion | json }}</pre><pre>{{ conflict.remoteServerVersion | json }}</pre></details>
+                <div class="account-actions">
+                  <button class="btn btn-secondary" type="button" (click)="resolve(conflict.id, 'keep-local')">Keep local version</button>
+                  <button class="btn btn-secondary" type="button" (click)="resolve(conflict.id, 'keep-remote')">Keep remote version</button>
+                </div>
+                <label [for]="'manual-' + conflict.id">Manual resolved JSON</label>
+                <textarea [id]="'manual-' + conflict.id" [ngModel]="manualDrafts[conflict.id] || ''" (ngModelChange)="manualDrafts[conflict.id] = $event"></textarea>
+                <button class="btn btn-secondary" type="button" (click)="resolveManual(conflict)">Submit manual resolution</button>
+              </article>
+            } @empty { <p>No conflicts require attention.</p> }
+          </section>
         </article>
       } @else {
-        <form class="card account-form" (submit)="submit($event)">
-          <label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required [(ngModel)]="email">
-          <label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required [(ngModel)]="password">
-          <div class="actions">
+        <form class="card account-card account-form" (submit)="submit($event)">
+          <div class="account-section">
+            <p class="eyebrow">Welcome back</p>
+            <h2>Sign in to sync</h2>
+            <p>Access your account while keeping guest countdowns safe on this device.</p>
+          </div>
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required [(ngModel)]="email">
+          </div>
+          <div class="form-field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required [(ngModel)]="password">
+          </div>
+          <div class="account-actions">
             <button class="btn btn-primary" type="submit" (click)="mode.set('login')">Sign in</button>
             <button class="btn btn-secondary" type="submit" (click)="mode.set('register')">Create account</button>
           </div>
-          <button class="link-button" type="button" (click)="resetPassword()">Send password reset email</button>
-          <p role="alert">{{ message() }}</p>
-          <p>Guest mode remains available. Supabase must be configured by the application host.</p>
+          <button class="link-button" type="button" (click)="resetPassword()">Forgot your password?</button>
+          <p class="status-message" role="alert">{{ message() }}</p>
+          <p class="guest-note">Guest mode remains available. Supabase must be configured by the application host.</p>
         </form>
       }
     </section>`

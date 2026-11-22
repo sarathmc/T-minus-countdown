@@ -7,11 +7,16 @@
       <span>T-Minus Countdown</span>
     </a>
 
-    <nav class="primary-nav" aria-label="Primary">
+    <button type="button" class="menu-toggle" [attr.aria-expanded]="menuOpen()" aria-controls="primary-navigation"
+      aria-label="Toggle primary navigation" (click)="toggleMenu()">
+      <span aria-hidden="true">☰</span>
+    </button>
+
+    <nav id="primary-navigation" class="primary-nav" [class.open]="menuOpen()" aria-label="Primary">
       <ul>
         @for (link of navLinks; track link.path) {
           <li>
-            <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page">{{
+            <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="closeMenu()">{{
               link.label
             }}</a>
           </li>

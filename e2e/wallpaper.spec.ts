@@ -22,3 +22,19 @@ test('wallpaper studio changes design and exports a non-empty PNG', async ({ pag
   expect(bytes.readUInt32BE(16)).toBe(1920);
   expect(bytes.readUInt32BE(20)).toBe(1080);
 });
+
+test('wallpaper studio uses the first countdown on direct entry and switches countdowns', async ({ page }) => {
+  await resetClient(page);
+  await createCountdown(page, 'First wallpaper');
+  await page.goto('/countdowns/new');
+  await page.getByLabel('Title').fill('Second wallpaper');
+  await page.getByLabel('Target date and time').fill('2030-02-15T12:00');
+  await page.getByRole('button', { name: 'Create countdown' }).click();
+
+  await page.goto('/wallpaper-studio');
+  await expect(page.getByLabel('Countdown', { exact: true })).toHaveValue(/.+/);
+  await page.getByLabel('Countdown', { exact: true }).selectOption({ label: 'First wallpaper' });
+  await expect(page.getByRole('heading', { name: 'First wallpaper' })).toBeVisible();
+  await page.getByLabel('Countdown', { exact: true }).selectOption({ label: 'Second wallpaper' });
+  await expect(page.getByRole('heading', { name: 'Second wallpaper' })).toBeVisible();
+});

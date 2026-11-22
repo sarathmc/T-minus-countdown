@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, signal, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, HostListener, signal, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
@@ -20,6 +20,7 @@ export class AppComponent {
   private readonly destroyRef = inject(DestroyRef);
   protected readonly online = signal(typeof navigator === 'undefined' || navigator.onLine);
   protected readonly updateReady = signal(false);
+  protected readonly menuOpen = signal(false);
 
   constructor() {
     this.notifications.startForegroundChecks();
@@ -41,6 +42,19 @@ export class AppComponent {
   protected reloadForUpdate(): void {
     void this.updates?.activateUpdate().then(() => document.location.reload());
   }
+  protected toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  protected closeMenuOnEscape(): void {
+    if (this.menuOpen()) this.closeMenu();
+  }
+
   protected readonly navLinks = [
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Countdowns', path: '/countdowns' },
