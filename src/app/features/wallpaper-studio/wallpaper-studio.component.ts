@@ -77,8 +77,13 @@ export class WallpaperStudioComponent {
       '--wallpaper-accent': options.accent,
       '--wallpaper-font': options.font,
       '--wallpaper-size': `${options.fontSize}cqw`,
+      '--wallpaper-title-size': `${this.titleScale()}`,
       'text-align': options.alignment,
     };
+  });
+  protected readonly titleScale = computed(() => {
+    const titleLength = this.countdown()?.title.length ?? 0;
+    return Math.max(0.34, Math.min(0.75, 0.75 - Math.max(0, titleLength - 24) * 0.012));
   });
 
   constructor() {
