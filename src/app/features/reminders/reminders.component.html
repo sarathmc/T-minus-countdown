@@ -26,7 +26,7 @@
       @else { <button type="button" class="btn btn-secondary" (click)="enableNotifications()">Turn notifications on</button> }
     }
     <label class="check"><input type="checkbox" [checked]="preferences().dailyReminderEnabled" (change)="toggleDaily($any($event.target).checked)"> Daily reminder preference</label>
-    <div class="form-row reminder-schedule-row">
+    <div class="form-row">
       <div class="form-field"><label for="daily-time">Preferred daily time</label><input id="daily-time" type="time" [value]="preferences().dailyReminderTime" (change)="updateDailyTime($any($event.target).value)"></div>
       <div class="form-field"><label for="daily-zone">Timezone</label><select id="daily-zone" [value]="preferences().timeZone" (change)="updatePreferenceZone($any($event.target).value)">@for (zone of zones; track zone) { <option [value]="zone">{{ zone }}</option> }</select></div>
     </div>
@@ -45,7 +45,7 @@
           <div class="form-field"><label for="preset">Quick schedule</label><select id="preset" (change)="applyPreset($any($event.target).value === '' ? null : +$any($event.target).value)"><option value="">Custom date and time</option>@for (preset of presets; track preset.days) { <option [value]="preset.days">{{ preset.label }}</option> }</select></div>
           <div class="form-field"><label for="reminder-title">Reminder title</label><input id="reminder-title" formControlName="title" maxlength="100" required><span class="hint">Up to 100 characters.</span></div>
           <div class="form-field"><label for="reminder-description">Description (optional)</label><textarea id="reminder-description" rows="2" maxlength="280" formControlName="description"></textarea></div>
-          <div class="form-row">
+          <div class="form-row reminder-schedule-row">
             <div class="form-field"><label for="scheduled">Date and time</label><input id="scheduled" type="datetime-local" formControlName="scheduledLocal" required></div>
             <div class="form-field"><label for="timezone">Timezone</label><select id="timezone" formControlName="timeZone">@for (zone of zones; track zone) { <option [value]="zone">{{ zone }}</option> }</select></div>
           </div>

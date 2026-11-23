@@ -47,10 +47,18 @@ for (const viewport of [
     const row = page.locator('.reminder-schedule-row');
     const dateField = row.locator('.form-field').nth(0);
     const timezoneField = row.locator('.form-field').nth(1);
-    const dateBox = await dateField.boundingBox();
-    const timezoneBox = await timezoneField.boundingBox();
+    const dateControl = page.locator('#scheduled');
+    const timezoneControl = page.locator('#timezone');
+    const rowBox = await row.boundingBox();
+    const dateBox = await dateControl.boundingBox();
+    const timezoneBox = await timezoneControl.boundingBox();
+    const pageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(pageOverflow).toBeLessThanOrEqual(0);
+    expect(rowBox).not.toBeNull();
     expect(dateBox).not.toBeNull();
     expect(timezoneBox).not.toBeNull();
+    expect(dateBox!.x + dateBox!.width).toBeLessThanOrEqual(rowBox!.x + rowBox!.width + 1);
+    expect(timezoneBox!.x + timezoneBox!.width).toBeLessThanOrEqual(rowBox!.x + rowBox!.width + 1);
 
     if (viewport.width <= 520) {
       expect(timezoneBox!.y - (dateBox!.y + dateBox!.height)).toBeGreaterThanOrEqual(15);
