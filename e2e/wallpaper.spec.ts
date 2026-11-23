@@ -81,3 +81,32 @@ test('applies an independent theme and persists it on the countdown presentation
   await page.goto(`/countdowns/${secondId}`);
   await expect(page.locator('.timer-panel')).not.toHaveCSS('color', 'rgb(23, 23, 23)');
 });
+
+test('renders readable themed detail headers on desktop and mobile', async ({ page }) => {
+  const themes = [
+    ['Gradient Focus', 'rgb(41, 61, 117)', 'rgb(255, 255, 255)'],
+    ['Minimal Light', 'rgb(244, 240, 232)', 'rgb(36, 35, 31)'],
+    ['Midnight Dark', 'rgb(21, 25, 35)', 'rgb(244, 242, 236)'],
+    ['Bold Typography', 'rgb(245, 203, 75)', 'rgb(23, 23, 23)'],
+    ['Milestone Planner', 'rgb(231, 238, 232)', 'rgb(32, 59, 50)'],
+  ] as const;
+  await resetClient(page);
+  await createCountdown(page, 'Contrast deadline');
+  const countdownId = page.url().split('/').pop();
+
+  for (const [viewport, width] of [['desktop', 1440], ['mobile', 375]] as const) {
+    await page.setViewportSize({ width, height: viewport === 'desktop' ? 900 : 812 });
+    for (const [name, background, text] of themes) {
+      await page.goto(`/theme-studio/${countdownId}`);
+      await page.getByRole('button', { name: new RegExp(name) }).click();
+      await page.getByRole('button', { name: 'Apply theme' }).click();
+      await page.waitForTimeout(300);
+      await page.goto(`/countdowns/${countdownId}`);
+      const header = page.locator('.countdown-header');
+      await expect(header).toHaveCSS('background-color', background);
+      await expect(header.locator('h1')).toHaveCSS('color', text);
+      await expect(header.getByRole('link', { name: 'All countdowns' })).toBeVisible();
+      await expect(header.locator('.muted').last()).toBeVisible();
+    }
+  }
+});

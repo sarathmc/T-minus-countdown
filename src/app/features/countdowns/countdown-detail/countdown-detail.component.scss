@@ -7,6 +7,44 @@
   flex-wrap: wrap;
 }
 
+.countdown-header {
+  padding: var(--space-5);
+  color: var(--countdown-text, var(--color-text));
+  background: var(--countdown-background, var(--color-bg));
+  border: var(--countdown-border, 1px solid var(--color-border));
+  border-radius: var(--countdown-radius, var(--radius-lg));
+}
+
+.countdown-header h1,
+.countdown-header p {
+  color: var(--countdown-text, var(--color-text));
+}
+
+.countdown-header .muted {
+  color: var(--countdown-secondary-text, var(--color-text-muted));
+}
+
+.countdown-header .badge {
+  color: var(--countdown-text, var(--color-text));
+  background: var(--countdown-surface, var(--color-surface));
+  border: 1px solid var(--countdown-secondary-text, var(--color-border));
+}
+
+.countdown-header .back-link {
+  color: var(--countdown-secondary-text, var(--color-text-muted));
+}
+
+.countdown-header .back-link:hover,
+.countdown-header .back-link:active {
+  color: var(--countdown-link-hover, var(--countdown-text, var(--color-text)));
+}
+
+.countdown-header .back-link:focus-visible {
+  color: var(--countdown-link, var(--countdown-text, var(--color-text)));
+  outline: 3px solid var(--countdown-focus, var(--color-focus-ring));
+  outline-offset: 3px;
+}
+
 .back-link {
   display: inline-block;
   margin-bottom: var(--space-2);

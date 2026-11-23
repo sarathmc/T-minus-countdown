@@ -8,7 +8,7 @@
 } @else {
   @let c = countdown()!;
 
-  <header class="page-header countdown-themed" [ngStyle]="themeStyle(c)">
+  <header class="page-header countdown-header countdown-themed" [ngStyle]="themeStyle(c)">
     <div>
       <a routerLink="/countdowns" class="back-link">&larr; All countdowns</a>
       <h1>{{ c.title }}</h1>
