@@ -30,3 +30,37 @@ test('reports unsupported browser notification environments', async ({ browser }
   await expect(page.getByText('This browser does not support the Notification API.')).toBeVisible();
   await context.close();
 });
+
+for (const viewport of [
+  { name: 'mobile 320', width: 320, height: 800 },
+  { name: 'mobile 375', width: 375, height: 800 },
+  { name: 'mobile 430', width: 430, height: 800 },
+  { name: 'tablet 768', width: 768, height: 900 },
+  { name: 'desktop', width: 1440, height: 900 },
+]) {
+  test(`reminder date and timezone fields are spaced at ${viewport.name}`, async ({ page }) => {
+    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await resetClient(page);
+    await createCountdown(page, 'Reminder layout deadline');
+    await page.goto('/reminders');
+
+    const row = page.locator('.reminder-schedule-row');
+    const dateField = row.locator('.form-field').nth(0);
+    const timezoneField = row.locator('.form-field').nth(1);
+    const dateBox = await dateField.boundingBox();
+    const timezoneBox = await timezoneField.boundingBox();
+    expect(dateBox).not.toBeNull();
+    expect(timezoneBox).not.toBeNull();
+
+    if (viewport.width <= 520) {
+      expect(timezoneBox!.y - (dateBox!.y + dateBox!.height)).toBeGreaterThanOrEqual(15);
+      expect(Math.abs(timezoneBox!.x - dateBox!.x)).toBeLessThanOrEqual(1);
+    } else {
+      expect(timezoneBox!.x - (dateBox!.x + dateBox!.width)).toBeGreaterThanOrEqual(15);
+      expect(dateBox!.width).toBeGreaterThan(0);
+      expect(timezoneBox!.width).toBeGreaterThan(0);
+    }
+    await expect(dateField.locator('label')).toBeVisible();
+    await expect(timezoneField.locator('label')).toBeVisible();
+  });
+}

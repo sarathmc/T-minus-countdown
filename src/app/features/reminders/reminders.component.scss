@@ -16,6 +16,7 @@
 .form-field input, .form-field select, .form-field textarea { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-sm); color: var(--color-text); min-height: 2.75rem; padding: .55rem .7rem; width: 100%; }
 .form-field textarea { resize: vertical; }
 .form-row { display: grid; gap: var(--space-3); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.reminder-schedule-row { column-gap: 16px; row-gap: 16px; }
 .check { align-items: center; display: flex; gap: var(--space-2); }
 .check input, .switch-label input { accent-color: var(--color-primary); min-height: 1rem; width: 1rem; }
 .actions, .item-actions { align-items: center; display: flex; flex-wrap: wrap; gap: var(--space-2); }
@@ -41,6 +42,7 @@
 
 @media (max-width: 520px) {
   .form-row { grid-template-columns: 1fr; }
+  .reminder-schedule-row { row-gap: 16px; }
   .reminder-item { align-items: flex-start; flex-direction: column; }
   .item-actions { justify-content: flex-start; }
 }
